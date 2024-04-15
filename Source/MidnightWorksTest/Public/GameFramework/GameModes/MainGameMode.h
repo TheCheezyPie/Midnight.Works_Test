@@ -13,5 +13,20 @@ UCLASS()
 class MIDNIGHTWORKSTEST_API AMainGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+
+//  Functions
+
+public:
+
+protected:
+
+private:
+
+//  Variables
+
+public:
+
+protected:
+
+private:
 };

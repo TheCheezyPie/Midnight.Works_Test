@@ -4,6 +4,9 @@
 #include "GameFramework/Controllers/MainPlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Blueprint/UserWidget.h"
+#include "UMG/PauseWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 void AMainPlayerController::BeginPlay()
 {
@@ -13,6 +16,16 @@ void AMainPlayerController::BeginPlay()
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
+
+	if (PauseMenuWidgetClass)
+	{
+		PauseMenuWidget = CreateWidget<UPauseWidget>(this, PauseMenuWidgetClass);
+		if (PauseMenuWidget)
+		{
+			PauseMenuWidget->AddToViewport();
+			PauseMenuWidget->SetVisibility(ESlateVisibility::Collapsed);
+		}
+	}
 }
 
 void AMainPlayerController::SetupInputComponent()
@@ -21,11 +34,54 @@ void AMainPlayerController::SetupInputComponent()
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 	{
-		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this, &AMainPlayerController::TogglePauseMenu);
+		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this, &AMainPlayerController::TogglePause);
 	}
 }
 
-void AMainPlayerController::TogglePauseMenu()
+bool AMainPlayerController::SetPause(bool bPause, FCanUnpause CanUnpauseDelegate)
 {
+	bool bResult = Super::SetPause(bPause, CanUnpauseDelegate);
+
+	if (IsPaused())
+	{
+		ShowPauseMenu();
+
+		FInputModeGameAndUI InputMode;
+		SetInputMode(InputMode);
+
+		SetShowMouseCursor(true);
+	}
+	else
+	{
+		HidePauseMenu();
+
+		FInputModeGameOnly InputMode;
+		SetInputMode(InputMode);
+
+		SetShowMouseCursor(false);
+	}
+
+	return bResult;
+}
+
+void AMainPlayerController::TogglePause()
+{
+	SetPause(!IsPaused());
+}
+
+void AMainPlayerController::ShowPauseMenu()
+{
+	if (PauseMenuWidget)
+	{
+		PauseMenuWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+}
+
+void AMainPlayerController::HidePauseMenu()
+{
+	if (PauseMenuWidget)
+	{
+		PauseMenuWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
 }
 

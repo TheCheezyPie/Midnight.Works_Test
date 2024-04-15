@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+
 #include "MainPlayerController.generated.h"
 
 /**
@@ -17,7 +18,8 @@ class MIDNIGHTWORKSTEST_API AMainPlayerController : public APlayerController
 //  Functions
 
 public:
-	void TogglePauseMenu();
+	virtual bool SetPause(bool bPause, FCanUnpause CanUnpauseDelegate = FCanUnpause()) override;
+	void TogglePause();
 
 protected:
 	virtual void BeginPlay() override;
@@ -25,17 +27,24 @@ protected:
 	virtual void SetupInputComponent() override;
 
 private:
+	void ShowPauseMenu();
+	void HidePauseMenu();
 
 //  Variables
 
 public:
 
 protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pause")
+	TSubclassOf<class UPauseWidget> PauseMenuWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pause")
+	TObjectPtr<UPauseWidget> PauseMenuWidget;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputMappingContext* DefaultMappingContext;
+	TObjectPtr<class UInputMappingContext> DefaultMappingContext;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* PauseAction;
+	TObjectPtr<class UInputAction> PauseAction;
 };
