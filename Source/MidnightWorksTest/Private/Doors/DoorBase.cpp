@@ -4,6 +4,8 @@
 #include "Doors/DoorBase.h"
 #include "GameFramework/GameModes/MainGameMode.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "Pickups/PickupBase.h"
 
 ADoorBase::ADoorBase()
 {
@@ -44,11 +46,11 @@ void ADoorBase::AddPickup(EPickupType Type, int32 Value)
 
 	if (*CurrentValue == RequiredValue)
 	{
-		CurrentPickups.Remove(Type);
+		RequiredPickups.Remove(Type);
 
-		if (CurrentPickups.Num() - 1 == 0)
+		if (RequiredPickups.Num() <= 0)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Door %s is open"), *GetName());
+			LOG_SCREEN("Door %s is open", *DoorName.ToString());
 			// Open the door
 		}
 	}
@@ -56,9 +58,9 @@ void ADoorBase::AddPickup(EPickupType Type, int32 Value)
 
 void ADoorBase::InitializeDoor()
 {
-	FillPickupMaps();
 	InitNameIfNeeded();
-	//SpawnPickups();
+
+	FillPickupMaps();
 }
 
 void ADoorBase::InitNameIfNeeded()
@@ -71,19 +73,59 @@ void ADoorBase::InitNameIfNeeded()
 
 void ADoorBase::FillPickupMaps()
 {
-	int32 RequiredKeys = FMath::RandRange(0, MaxRequiredKeys);
-	TTuple<EPickupType, int32> Keys;
-	if (RequiredKeys)
+	TArray<AActor*> Pickups;
+	UGameplayStatics::GetAllActorsOfClassWithTag(this, APickupBase::StaticClass(), DoorName, Pickups);
+	if (Pickups.Num() > 0)
 	{
-		Keys = { EPickupType::Key, RequiredKeys };
+		AddExistingPickups(Pickups);
 	}
-	int32 RequiredCoins = FMath::RandRange(1, MaxRequiredCoins);
-	TTuple<EPickupType, int32> Coins{ EPickupType::Coin, RequiredCoins };
+	else
+	{
+		RandomisePickups();
+		SpawnPickups();
+	}
+}
 
-	RequiredPickups.Add(Keys);
-	RequiredPickups.Add(Coins);
+void ADoorBase::AddExistingPickups(const TArray<AActor*>& Pickups)
+{
+	for (AActor* Actor : Pickups)
+	{
+		APickupBase* Pickup = StaticCast<APickupBase*>(Actor);
+		if (Pickup)
+		{
+			EPickupType Type = Pickup->GetPickupType();
+			int32 Value = Pickup->GetValue();
+			RequiredPickups.Add(Type, Value);
+			CurrentPickups.Add(Type, 0);
+		}
+	}
+}
 
-	CurrentPickups.Add(EPickupType::Key, 0);
-	CurrentPickups.Add(EPickupType::Coin, 0);
+void ADoorBase::RandomisePickups()
+{
+	int32 RequiredKeys = FMath::RandRange(MinRequiredKeys, MaxRequiredKeys);
+	if (RequiredKeys > 0)
+	{
+		TTuple<EPickupType, int32> Keys{ EPickupType::Key, RequiredKeys };
+		RequiredPickups.Add(Keys);
+		CurrentPickups.Add(EPickupType::Key, 0);
+	}
+
+	int32 RequiredCoins = FMath::RandRange(MinRequiredCoins, MaxRequiredCoins);
+	if (RequiredCoins > 0)
+	{
+		TTuple<EPickupType, int32> Coins{ EPickupType::Coin, RequiredCoins };
+		RequiredPickups.Add(Coins);
+		CurrentPickups.Add(EPickupType::Coin, 0);
+	}
+}
+
+void ADoorBase::SpawnPickups()
+{
+	AMainGameMode* GameMode = GetWorld()->GetAuthGameMode<AMainGameMode>();
+	if (GameMode)
+	{
+		GameMode->SpawnPickups(DoorName, RequiredPickups);
+	}
 }
 

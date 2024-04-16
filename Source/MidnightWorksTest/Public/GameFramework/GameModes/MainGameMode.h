@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Types.h"
+
 #include "MainGameMode.generated.h"
 
 /**
@@ -17,8 +19,11 @@ class MIDNIGHTWORKSTEST_API AMainGameMode : public AGameModeBase
 //  Functions
 
 public:
+	void SpawnPickups(const FName& DoorName, const TMap<EPickupType, int32>& PickupsToSpawn);
 
 protected:
+	virtual void BeginPlay() override;
+	void InitializeGame();
 
 private:
 

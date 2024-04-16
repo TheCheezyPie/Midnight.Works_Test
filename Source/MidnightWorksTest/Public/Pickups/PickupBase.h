@@ -25,6 +25,8 @@ public:
 //  Functions
 
 public:
+	FORCEINLINE EPickupType GetPickupType() const { return PickupType; }
+	FORCEINLINE int32 GetValue() const { return Value; }
 
 protected:
 	UFUNCTION()

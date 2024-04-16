@@ -25,12 +25,15 @@ public:
 //  Functions
 
 public:
+	void InitializeDoor();
 	void AddPickup(EPickupType Type, int32 Value);
 
 protected:
-	void InitializeDoor();
 	void InitNameIfNeeded();
 	void FillPickupMaps();
+	void AddExistingPickups(const TArray<AActor*>& Pickups);
+	void RandomisePickups();
+	void SpawnPickups();
 
 private:
 
@@ -57,10 +60,16 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Door")
 	TMap<EPickupType, int32> CurrentPickups;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door | Pickups")
+	int32 MinRequiredKeys = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door | Pickups")
 	int32 MaxRequiredKeys = 2;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door | Pickups")
+	int32 MinRequiredCoins = 3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door | Pickups")
 	int32 MaxRequiredCoins = 5;
 
 private:
