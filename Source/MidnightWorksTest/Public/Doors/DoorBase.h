@@ -28,11 +28,12 @@ public:
 	FORCEINLINE FName GetDoorName() const { return DoorName; }
 
 	void InitializeDoor();
-	void AddPickup(EPickupType Type, int32 Value);
+	void AddPickup(EPickupType Type);
 
 protected:
 	void InitNameIfNeeded();
 	void FillPickupMaps();
+	void AccountForPickupsFromLevel();
 	void AddExistingPickups(const TArray<AActor*>& Pickups);
 	void RandomisePickups();
 	void SpawnPickups();
@@ -41,6 +42,8 @@ protected:
 	void OpenDoor();
 
 private:
+	// @return true if the Value was added, false if it was created
+	bool MapAddChecked(EPickupType Type, bool bIsCurrentMap, int32 Value = 1);
 
 //  Variables
 
@@ -74,22 +77,21 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Door")
 	TMap<EPickupType, int32> CurrentPickups;
 
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Door | Pickups")
-	TArray<class APickupBase*> PickupsFromTheLevel;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Door|Pickups")
+	TArray<class APickupBase*> PickupsFromLevel;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door | Pickups | Keys")
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Door|Pickups")
+	bool bRandomisePickupsAbovePreset = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door|Pickups|Keys")
 	int32 MinRequiredKeys = 0;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door | Pickups | Keys")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door|Pickups|Keys")
 	int32 MaxRequiredKeys = 2;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door | Pickups | Keys")
-	int32 MaxTheoreticalKeys = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door | Pickups | Coins")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door|Pickups|Coins")
 	int32 MinRequiredCoins = 3;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door | Pickups | Coins")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door|Pickups|Coins")
 	int32 MaxRequiredCoins = 5;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door | Pickups | Coins")
-	int32 MaxTheoreticalCoins = 0;
 
 private:
 };

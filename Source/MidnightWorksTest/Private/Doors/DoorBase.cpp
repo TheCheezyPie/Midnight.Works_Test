@@ -46,7 +46,7 @@ void ADoorBase::Tick(float DeltaTime)
 
 }
 
-void ADoorBase::AddPickup(EPickupType Type, int32 Value)
+void ADoorBase::AddPickup(EPickupType Type)
 {
 	int32 RequiredValue = RequiredPickups.FindChecked(Type);
 	int32* CurrentValue = CurrentPickups.Find(Type);
@@ -54,7 +54,7 @@ void ADoorBase::AddPickup(EPickupType Type, int32 Value)
 	{
 		return;
 	}
-	*CurrentValue = FMath::Clamp(*CurrentValue + Value, 0, RequiredValue);
+	*CurrentValue = FMath::Clamp(*CurrentValue + 1, 0, RequiredValue);
 
 	if (DoorWidget)
 	{
@@ -89,39 +89,9 @@ void ADoorBase::InitNameIfNeeded()
 
 void ADoorBase::FillPickupMaps()
 {
-	if (PickupsFromTheLevel.Num() > 0)
+	if (PickupsFromLevel.Num() > 0)
 	{
-		TArray<APickupBase*> Keys;
-		TArray<APickupBase*> Coins;
-
-		for (APickupBase* Pickup : PickupsFromTheLevel)
-		{
-			switch (Pickup->GetPickupType())
-			{
-			case EPickupType::Key:
-				Keys.Add(Pickup);
-				break;
-			case EPickupType::Coin:
-				Coins.Add(Pickup);
-				break;
-			default:
-				break;
-			}
-
-			Pickup->SetDoorToOpen(this);
-		}
-
-		if (Keys.Num() > 0)
-		{
-			RequiredPickups.Add(EPickupType::Key, Keys.Num());
-			CurrentPickups.Add(EPickupType::Key, 0);
-		}
-
-		if (Coins.Num() > 0)
-		{
-			RequiredPickups.Add(EPickupType::Coin, Coins.Num());
-			CurrentPickups.Add(EPickupType::Coin, 0);
-		}
+		AccountForPickupsFromLevel();
 	}
 
 	TArray<AActor*> Pickups;
@@ -130,7 +100,7 @@ void ADoorBase::FillPickupMaps()
 	{
 		AddExistingPickups(Pickups);
 	}
-	else
+	if (bRandomisePickupsAbovePreset || (Pickups.Num() == 0 && PickupsFromLevel.Num() == 0))
 	{
 		RandomisePickups();
 	}
@@ -139,6 +109,49 @@ void ADoorBase::FillPickupMaps()
 	if (DoorWidget)
 	{
 		DoorWidget->InitializeWidget(RequiredPickups);
+	}
+
+	for (auto& Pair : CurrentPickups)
+	{
+		Pair.Value = 0;
+	}
+}
+
+void ADoorBase::AccountForPickupsFromLevel()
+{
+	int32 KeysSpawned = 0;
+	int32 CoinsSpawned = 0;
+
+	for (APickupBase* Pickup : PickupsFromLevel)
+	{
+		if (Pickup)
+		{
+			switch (Pickup->GetPickupType())
+			{
+			case EPickupType::Key:
+				KeysSpawned++;
+				break;
+			case EPickupType::Coin:
+				CoinsSpawned++;
+				break;
+			default:
+				break;
+			}
+
+			Pickup->SetDoorToOpen(this);
+		}
+	}
+
+	if (KeysSpawned > 0)
+	{
+		MapAddChecked(EPickupType::Key, true, KeysSpawned);
+		MapAddChecked(EPickupType::Key, false, KeysSpawned);
+	}
+
+	if (CoinsSpawned > 0)
+	{
+		MapAddChecked(EPickupType::Coin, true, CoinsSpawned);
+		MapAddChecked(EPickupType::Coin, false, CoinsSpawned);
 	}
 }
 
@@ -150,17 +163,9 @@ void ADoorBase::AddExistingPickups(const TArray<AActor*>& Pickups)
 		if (Pickup)
 		{
 			EPickupType Type = Pickup->GetPickupType();
-			int32 Value = Pickup->GetValue();
 
-			if (int32* ptr = RequiredPickups.Find(Type))
-			{
-				*ptr += Value;
-			}
-			else
-			{
-				RequiredPickups.Add(Type, Value);
-				CurrentPickups.Add(Type, 0);
-			}
+			MapAddChecked(Type, true);
+			MapAddChecked(Type, false);
 
 			Pickup->SetDoorToOpen(this);
 		}
@@ -169,88 +174,17 @@ void ADoorBase::AddExistingPickups(const TArray<AActor*>& Pickups)
 
 void ADoorBase::RandomisePickups()
 {
-	TArray<AActor*> Spawners;
-	UGameplayStatics::GetAllActorsOfClassWithTag(this, APickupSpawner::StaticClass(), DoorName, Spawners);
-	if (Spawners.Num() > 0)
+	int32 RequiredKeys = FMath::RandRange(MinRequiredKeys, MaxRequiredKeys);
+	if (RequiredKeys > 0)
 	{
-		TArray<APickupSpawner*> KeySpawners;
-		TArray<APickupSpawner*> CoinSpawners;
-
-		for (AActor* Actor : Spawners)
-		{
-			APickupSpawner* Spawner = StaticCast<APickupSpawner*>(Actor);
-
-			switch (Spawner->GetPickupType())
-			{
-			case EPickupType::Key:
-				KeySpawners.Add(Spawner);
-				break;
-			case EPickupType::Coin:
-				CoinSpawners.Add(Spawner);
-				break;
-			default:
-				break;
-			}
-		}
-
-		MaxTheoreticalCoins = CoinSpawners.Num();
-		if (MaxRequiredCoins > MaxTheoreticalCoins)
-		{
-			MaxRequiredCoins = MaxTheoreticalCoins;
-		}
-		else if (MaxRequiredCoins == 0)
-		{
-			MaxRequiredCoins = FMath::RandRange(MinRequiredCoins, MaxTheoreticalCoins);
-		}
-
-		MaxTheoreticalKeys = KeySpawners.Num();
-		if (MaxRequiredKeys > MaxTheoreticalKeys)
-		{
-			MaxRequiredKeys = MaxTheoreticalKeys;
-		}
-		else if (MaxRequiredKeys == 0)
-		{
-			MaxRequiredKeys = FMath::RandRange(MinRequiredKeys, MaxTheoreticalKeys);
-		}
-	}
-	else
-	{
-		OpenDoor();
-
-		RequiredPickups.Add(EPickupType::Key, 0);
-		RequiredPickups.Add(EPickupType::Coin, 0);
-
-		CurrentPickups.Add(EPickupType::Key, 0);
-		CurrentPickups.Add(EPickupType::Coin, 0);
-
-		return;
+		MapAddChecked(EPickupType::Key, false, RequiredKeys);
 	}
 
-	if (RequiredPickups.IsEmpty())
+	int32 RequiredCoins = FMath::RandRange(MinRequiredCoins, MaxRequiredCoins);
+	if (RequiredCoins > 0)
 	{
-		if (!RequiredPickups.Find(EPickupType::Key))
-		{
-			int32 RequiredKeys = FMath::RandRange(MinRequiredKeys, MaxRequiredKeys);
-			if (RequiredKeys > 0)
-			{
-				TTuple<EPickupType, int32> Keys{ EPickupType::Key, RequiredKeys };
-				RequiredPickups.Add(Keys);
-			}
-		}
-
-		if (!RequiredPickups.Find(EPickupType::Coin))
-		{
-			int32 RequiredCoins = FMath::RandRange(MinRequiredCoins, MaxRequiredCoins);
-			if (RequiredCoins > 0)
-			{
-				TTuple<EPickupType, int32> Coins{ EPickupType::Coin, RequiredCoins };
-				RequiredPickups.Add(Coins);
-			}
-		}
+		MapAddChecked(EPickupType::Coin, false, RequiredCoins);
 	}
-
-	CurrentPickups.Add(EPickupType::Key, 0);
-	CurrentPickups.Add(EPickupType::Coin, 0);
 }
 
 void ADoorBase::SpawnPickups()
@@ -260,12 +194,49 @@ void ADoorBase::SpawnPickups()
 	UGameplayStatics::GetAllActorsOfClassWithTag(this, APickupSpawner::StaticClass(), DoorName, PickupSpawners);
 	if (PickupSpawners.Num() > 0)
 	{
-		TArray<APickupSpawner*> CastedSpawners;
+		int32 KeysToSpawn = 0;
+		if (int32* ptr = RequiredPickups.Find(EPickupType::Key))
+		{
+			KeysToSpawn = *ptr;
+		}
+		else
+		{
+			RequiredPickups.Add(EPickupType::Key, 0);
+		}
 
+		if (int32* ptr = CurrentPickups.Find(EPickupType::Key))
+		{
+			KeysToSpawn -= *ptr;
+		}
+		else
+		{
+			CurrentPickups.Add(EPickupType::Key, 0);
+		}
+
+		int32 CoinsToSpawn = 0;
+		if (int32* ptr = RequiredPickups.Find(EPickupType::Coin))
+		{
+			CoinsToSpawn = *ptr;
+		}
+		else
+		{
+			RequiredPickups.Add(EPickupType::Coin, 0);
+		}
+
+		if (int32* ptr = CurrentPickups.Find(EPickupType::Coin))
+		{
+			CoinsToSpawn -= *ptr;
+		}
+		else
+		{
+			CurrentPickups.Add(EPickupType::Coin, 0);
+		}
+
+		TArray<APickupSpawner*> AllSpawners;
 		TArray<APickupSpawner*> KeySpawners;
-		int32 KeysSpawned = 0;
-
 		TArray<APickupSpawner*> CoinSpawners;
+
+		int32 KeysSpawned = 0;
 		int32 CoinsSpawned = 0;
 
 		for (AActor* Actor : PickupSpawners)
@@ -284,7 +255,7 @@ void ADoorBase::SpawnPickups()
 				break;
 			}
 
-			CastedSpawners.Add(Spawner);
+			AllSpawners.Add(Spawner);
 		}
 
 		for (const auto& Pair : RequiredPickups)
@@ -294,20 +265,26 @@ void ADoorBase::SpawnPickups()
 				switch (Pair.Key)
 				{
 				case EPickupType::Key:
-					if (KeySpawners.Num() > 0)
+					if (KeySpawners.Num() > 0 && KeysToSpawn > 0)
 					{
 						int32 Index = FMath::RandRange(0, KeySpawners.Num() - 1);
-						KeySpawners[Index]->SpawnPickup(EPickupType::Key, this);
-						KeysSpawned++;
+						APickupBase* Pickup = KeySpawners[Index]->SpawnPickupChecked(EPickupType::Key, this);
+						if (Pickup)
+						{
+							KeysSpawned++;
+						}
 						KeySpawners.RemoveAt(Index);
 					}
 					break;
 				case EPickupType::Coin:
-					if (CoinSpawners.Num() > 0)
+					if (CoinSpawners.Num() > 0 && CoinsToSpawn > 0)
 					{
 						int32 Index = FMath::RandRange(0, CoinSpawners.Num() - 1);
-						CoinSpawners[Index]->SpawnPickup(EPickupType::Coin, this);
-						CoinsSpawned++;
+						APickupBase* Pickup = CoinSpawners[Index]->SpawnPickupChecked(EPickupType::Coin, this);
+						if (Pickup)
+						{
+							CoinsSpawned++;
+						}
 						CoinSpawners.RemoveAt(Index);
 					}
 					break;
@@ -317,11 +294,14 @@ void ADoorBase::SpawnPickups()
 			}
 		}
 
-		if (KeysSpawned > 0)
+		if (KeysToSpawn > 0)
 		{
 			if (int32* ptr = RequiredPickups.Find(EPickupType::Key))
 			{
-				*ptr += KeysSpawned;
+				if (KeysSpawned < KeysToSpawn)
+				{
+					*ptr -= (KeysToSpawn - KeysSpawned);
+				}
 			}
 			else
 			{
@@ -329,11 +309,14 @@ void ADoorBase::SpawnPickups()
 			}
 		}
 
-		if (CoinsSpawned > 0)
+		if (CoinsToSpawn > 0)
 		{
 			if (int32* ptr = RequiredPickups.Find(EPickupType::Coin))
 			{
-				*ptr += CoinsSpawned;
+				if (CoinsSpawned < CoinsToSpawn)
+				{
+					*ptr -= (CoinsToSpawn - CoinsSpawned);
+				}
 			}
 			else
 			{
@@ -341,6 +324,21 @@ void ADoorBase::SpawnPickups()
 			}
 		}
 	}
+}
+
+bool ADoorBase::MapAddChecked(EPickupType Type, bool bIsCurrentMap, int32 Value)
+{
+	TMap<EPickupType, int32>* Map = bIsCurrentMap ? &CurrentPickups : &RequiredPickups;
+	int32* ptr = Map->Find(Type);
+	if (ptr)
+	{
+		*ptr += Value;
+	}
+	else
+	{
+		Map->Add(Type, Value);
+	}
+	return (bool)ptr;
 }
 
 void ADoorBase::OpenDoor_Implementation()

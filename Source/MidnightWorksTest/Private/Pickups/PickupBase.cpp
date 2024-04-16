@@ -42,7 +42,7 @@ void APickupBase::OnCollisionBeginOverlap(UPrimitiveComponent* OverlappedCompone
 	{
 		if (DoorToOpen)
 		{
-			DoorToOpen->AddPickup(PickupType, Value);
+			DoorToOpen->AddPickup(PickupType);
 			Destroy();
 		}
 	}

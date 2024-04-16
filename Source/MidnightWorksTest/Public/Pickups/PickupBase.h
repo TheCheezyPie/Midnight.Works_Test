@@ -26,7 +26,6 @@ public:
 
 public:
 	FORCEINLINE EPickupType GetPickupType() const { return PickupType; }
-	FORCEINLINE int32 GetValue() const { return Value; }
 
 	FORCEINLINE void SetDoorToOpen(class ADoorBase* Door) { DoorToOpen = Door; }
 
@@ -55,9 +54,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
 	EPickupType PickupType = EPickupType::Coin;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
-	int32 Value = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
 	TObjectPtr<class ADoorBase> DoorToOpen;

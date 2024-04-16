@@ -9,5 +9,5 @@ enum class EPickupType : uint8
 	Key,
 	Coin,
 
-	MAX
+	MAX = 255
 };
