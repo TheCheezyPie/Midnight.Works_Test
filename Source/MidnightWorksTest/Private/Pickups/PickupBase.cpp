@@ -5,6 +5,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "NiagaraComponent.h"
 #include "Doors/DoorBase.h"
+#include "Components/OscillationMovementComponent.h"
 
 APickupBase::APickupBase()
 {
@@ -18,6 +19,8 @@ APickupBase::APickupBase()
 
 	PickupFX = CreateDefaultSubobject<UNiagaraComponent>(TEXT("PickupFX"));
 	PickupFX->SetupAttachment(PickupMesh);
+
+	OscillationMovementComponent = CreateDefaultSubobject<UOscillationMovementComponent>(TEXT("OscillationMovementComponent"));
 }
 
 void APickupBase::BeginPlay()

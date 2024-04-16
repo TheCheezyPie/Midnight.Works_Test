@@ -31,6 +31,8 @@ public:
 
 protected:
 	void Move(const FInputActionValue& Value);
+	void StopMoving();
+
 	void Look(const FInputActionValue& Value);
 
 	void StartSprinting();
@@ -57,8 +59,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	float SprintSpeed = 900.f;
 
+	UPROPERTY(VisibleAnywhere)
 	bool bIsJumping = false;
+	UPROPERTY(VisibleAnywhere)
 	bool bIsMoving = false;
+	UPROPERTY(VisibleAnywhere)
 	bool bIsSprinting = false;
 
 private:

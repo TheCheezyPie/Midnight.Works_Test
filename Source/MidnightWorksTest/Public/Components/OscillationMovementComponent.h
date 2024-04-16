@@ -45,7 +45,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Idle Movement")
 	float MovementSpeed = 2.f;
 	UPROPERTY(EditAnywhere, Category = "Idle Movement")
-	float RotationSpeed = 50.f;
+	FRotator RotationSpeed = FRotator{ 0.f, 0.f, 50.f };
 
 private:
 };

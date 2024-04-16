@@ -33,7 +33,7 @@ void UOscillationMovementComponent::TickComponent(float DeltaTime, ELevelTick Ti
 			Trig = FMath::Sin(GetOwner()->GetGameTimeSinceCreation() * MovementSpeed);
 		}
 		GetOwner()->AddActorLocalOffset(FVector(0.f, 0.f, Trig * Amplitude));
-		GetOwner()->AddActorLocalRotation(FRotator(0.f, RotationSpeed * DeltaTime, 0.f));
+		GetOwner()->AddActorLocalRotation(RotationSpeed * DeltaTime);
 	}
 }
 
