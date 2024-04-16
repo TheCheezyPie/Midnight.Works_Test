@@ -24,8 +24,8 @@ public:
 //  Functions
 
 public:
-	void SpawnPickup(EPickupType PickupType);
-	void SpawnPickupChecked(EPickupType PickupType);
+	class APickupBase* SpawnPickup(EPickupType PickupType, class ADoorBase* PickupOwner);
+	APickupBase* SpawnPickupChecked(EPickupType PickupType, ADoorBase* PickupOwner);
 
 	FORCEINLINE EPickupType GetPickupType() const { return DefaultPickupType; }
 

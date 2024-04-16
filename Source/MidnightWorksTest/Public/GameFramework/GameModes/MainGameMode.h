@@ -8,9 +8,9 @@
 
 #include "MainGameMode.generated.h"
 
-/**
- * 
- */
+class APickupSpawner;
+class ADoorBase;
+
 UCLASS()
 class MIDNIGHTWORKSTEST_API AMainGameMode : public AGameModeBase
 {
@@ -19,7 +19,6 @@ class MIDNIGHTWORKSTEST_API AMainGameMode : public AGameModeBase
 //  Functions
 
 public:
-	void SpawnPickups(const FName& DoorName, const TMap<EPickupType, int32>& PickupsToSpawn);
 
 protected:
 	virtual void BeginPlay() override;

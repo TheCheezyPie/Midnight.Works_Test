@@ -2,6 +2,7 @@
 
 #include "Pickups/PickupSpawner.h"
 #include "Pickups/PickupBase.h"
+#include "Doors/DoorBase.h"
 #include "Components/BillboardComponent.h"
 
 APickupSpawner::APickupSpawner()
@@ -24,25 +25,35 @@ void APickupSpawner::Tick(float DeltaTime)
 
 }
 
-void APickupSpawner::SpawnPickup(EPickupType PickupType)
+APickupBase* APickupSpawner::SpawnPickup(EPickupType PickupType, ADoorBase* PickupOwner)
 {
+	APickupBase* Pickup = nullptr;
+
 	if (GetWorld())
 	{
 		TSubclassOf<APickupBase> PickupClass = PickupsClasses.FindChecked(PickupType);
 
 		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;
+		SpawnParams.Owner = PickupOwner;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-		GetWorld()->SpawnActor<APickupBase>(PickupClass, GetActorTransform(), SpawnParams);
+		Pickup = GetWorld()->SpawnActor<APickupBase>(PickupClass, GetActorTransform(), SpawnParams);
+		if (Pickup)
+		{
+			Pickup->SetDoorToOpen(PickupOwner);
+		}
 	}
+
+	return Pickup;
 }
 
-void APickupSpawner::SpawnPickupChecked(EPickupType PickupType)
+APickupBase* APickupSpawner::SpawnPickupChecked(EPickupType PickupType, ADoorBase* PickupOwner)
 {
 	if (PickupType == DefaultPickupType)
 	{
-		SpawnPickup(PickupType);
+		return SpawnPickup(PickupType, PickupOwner);
 	}
+
+	return nullptr;
 }
 
