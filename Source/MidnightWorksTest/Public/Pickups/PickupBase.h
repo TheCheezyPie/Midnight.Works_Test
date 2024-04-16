@@ -27,6 +27,7 @@ public:
 public:
 	FORCEINLINE EPickupType GetPickupType() const { return PickupType; }
 
+	FORCEINLINE class ADoorBase* GetDoorToOpen() const { return DoorToOpen; }
 	FORCEINLINE void SetDoorToOpen(class ADoorBase* Door) { DoorToOpen = Door; }
 
 protected:
@@ -47,10 +48,16 @@ protected:
 	TObjectPtr<class UStaticMeshComponent> PickupMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
-	TObjectPtr<class UNiagaraComponent> PickupFX;
+	TObjectPtr<class UNiagaraComponent> IdleFX;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
 	TObjectPtr<class UOscillationMovementComponent> OscillationMovementComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
+	TObjectPtr<class UAudioComponent> IdleAudioComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
+	TObjectPtr<class USoundBase> PickupSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
 	EPickupType PickupType = EPickupType::Coin;

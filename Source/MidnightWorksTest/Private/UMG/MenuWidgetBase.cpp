@@ -9,21 +9,15 @@ void UMenuWidgetBase::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (StartGameButton && OptionsButton && ExitGameButton)
+	if (StartGameButton && ExitGameButton)
 	{
 		StartGameButton->OnClicked.AddDynamic(this, &UMenuWidgetBase::OnStartGameButtonClicked);
-		OptionsButton->OnClicked.AddDynamic(this, &UMenuWidgetBase::OnOptionsButtonClicked);
 		ExitGameButton->OnClicked.AddDynamic(this, &UMenuWidgetBase::OnExitGameButtonClicked);
 	}
 }
 
 void UMenuWidgetBase::OnStartGameButtonClicked()
 {
-}
-
-void UMenuWidgetBase::OnOptionsButtonClicked()
-{
-	// Open Options Menu
 }
 
 void UMenuWidgetBase::OnExitGameButtonClicked()

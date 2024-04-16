@@ -4,6 +4,22 @@
 #include "UMG/DoorWidget.h"
 #include "Components/TextBlock.h"
 
+void UDoorWidget::InitializeWidget()
+{
+	RequiredKeys = 0;
+	CurrentKeys = 0;
+	RequiredCoins = 0;
+	CurrentCoins = 0;
+
+	RequiredKeysText->SetText(FText::FromString(FString::FromInt(RequiredKeys)));
+	CurrentKeysText->SetText(FText::FromString(FString::FromInt(0)));
+	RequiredCoinsText->SetText(FText::FromString(FString::FromInt(RequiredCoins)));
+	CurrentCoinsText->SetText(FText::FromString(FString::FromInt(0)));
+
+	PickupCompleted(EPickupType::Key);
+	PickupCompleted(EPickupType::Coin);
+}
+
 void UDoorWidget::InitializeWidget(const TMap<EPickupType, int32>& RequiredPickups)
 {
 	if (const int32* ptr_RequiredKeys = RequiredPickups.Find(EPickupType::Key))

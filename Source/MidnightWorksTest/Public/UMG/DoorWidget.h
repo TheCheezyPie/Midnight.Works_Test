@@ -19,6 +19,8 @@ class MIDNIGHTWORKSTEST_API UDoorWidget : public UUserWidget
 //  Functions
 
 public:
+	// For when the door is opened by default
+	void InitializeWidget();
 	void InitializeWidget(const TMap<EPickupType, int32>& RequiredPickups);
 	void UpdatePickup(EPickupType Type, int32 NewValue);
 

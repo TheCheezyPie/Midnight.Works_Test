@@ -26,6 +26,7 @@ public:
 
 public:
 	FORCEINLINE FName GetDoorName() const { return DoorName; }
+	FORCEINLINE bool IsRequired() const { return bIsRequired; }
 
 	void InitializeDoor();
 	void AddPickup(EPickupType Type);
@@ -69,6 +70,9 @@ protected:
 	TObjectPtr<class UDoorWidget> DoorWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door")
+	TObjectPtr<class USoundBase> OpenSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door")
 	FName DoorName = NAME_None;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door")
@@ -76,6 +80,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Door")
 	TMap<EPickupType, int32> CurrentPickups;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door")
+	bool bIsRequired = true;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Door|Pickups")
 	TArray<class APickupBase*> PickupsFromLevel;

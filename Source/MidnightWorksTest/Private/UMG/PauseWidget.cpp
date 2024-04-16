@@ -2,6 +2,7 @@
 
 
 #include "UMG/PauseWidget.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/Button.h"
 
 void UPauseWidget::NativeConstruct()
@@ -23,6 +24,5 @@ void UPauseWidget::OnStartGameButtonClicked()
 
 void UPauseWidget::OnExitToMainMenuButtonClicked()
 {
-	// Exit to Main Menu
-	// Open main menu level
+	UGameplayStatics::OpenLevel(GetOwningPlayer(), "MainMenu");
 }

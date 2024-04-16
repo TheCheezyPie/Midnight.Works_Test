@@ -106,14 +106,36 @@ void ADoorBase::FillPickupMaps()
 	}
 	SpawnPickups();
 
-	if (DoorWidget)
+	for (auto& Pair : RequiredPickups)
 	{
-		DoorWidget->InitializeWidget(RequiredPickups);
+		if (Pair.Value == 0)
+		{
+			RequiredPickups.Remove(Pair.Key);
+			CurrentPickups.Remove(Pair.Key);
+		}
 	}
 
 	for (auto& Pair : CurrentPickups)
 	{
 		Pair.Value = 0;
+	}
+
+	if (RequiredPickups.Num() == 0)
+	{
+		if (DoorWidget)
+		{
+			DoorWidget->InitializeWidget();
+		}
+
+		OpenSound = nullptr;
+		OpenDoor();
+	}
+	else
+	{
+		if (DoorWidget)
+		{
+			DoorWidget->InitializeWidget(RequiredPickups);
+		}
 	}
 }
 
@@ -160,7 +182,7 @@ void ADoorBase::AddExistingPickups(const TArray<AActor*>& Pickups)
 	for (AActor* Actor : Pickups)
 	{
 		APickupBase* Pickup = StaticCast<APickupBase*>(Actor);
-		if (Pickup)
+		if (Pickup && Pickup->GetDoorToOpen() != this)
 		{
 			EPickupType Type = Pickup->GetPickupType();
 
@@ -189,55 +211,55 @@ void ADoorBase::RandomisePickups()
 
 void ADoorBase::SpawnPickups()
 {
+	int32 KeysToSpawn = 0;
+	if (int32* ptr = RequiredPickups.Find(EPickupType::Key))
+	{
+		KeysToSpawn = *ptr;
+	}
+	else
+	{
+		RequiredPickups.Add(EPickupType::Key, 0);
+	}
+
+	if (int32* ptr = CurrentPickups.Find(EPickupType::Key))
+	{
+		KeysToSpawn -= *ptr;
+	}
+	else
+	{
+		CurrentPickups.Add(EPickupType::Key, 0);
+	}
+
+	int32 CoinsToSpawn = 0;
+	if (int32* ptr = RequiredPickups.Find(EPickupType::Coin))
+	{
+		CoinsToSpawn = *ptr;
+	}
+	else
+	{
+		RequiredPickups.Add(EPickupType::Coin, 0);
+	}
+
+	if (int32* ptr = CurrentPickups.Find(EPickupType::Coin))
+	{
+		CoinsToSpawn -= *ptr;
+	}
+	else
+	{
+		CurrentPickups.Add(EPickupType::Coin, 0);
+	}
+
+	int32 KeysSpawned = 0;
+	int32 CoinsSpawned = 0;
+
 	TArray<AActor*> PickupSpawners;
 
 	UGameplayStatics::GetAllActorsOfClassWithTag(this, APickupSpawner::StaticClass(), DoorName, PickupSpawners);
 	if (PickupSpawners.Num() > 0)
 	{
-		int32 KeysToSpawn = 0;
-		if (int32* ptr = RequiredPickups.Find(EPickupType::Key))
-		{
-			KeysToSpawn = *ptr;
-		}
-		else
-		{
-			RequiredPickups.Add(EPickupType::Key, 0);
-		}
-
-		if (int32* ptr = CurrentPickups.Find(EPickupType::Key))
-		{
-			KeysToSpawn -= *ptr;
-		}
-		else
-		{
-			CurrentPickups.Add(EPickupType::Key, 0);
-		}
-
-		int32 CoinsToSpawn = 0;
-		if (int32* ptr = RequiredPickups.Find(EPickupType::Coin))
-		{
-			CoinsToSpawn = *ptr;
-		}
-		else
-		{
-			RequiredPickups.Add(EPickupType::Coin, 0);
-		}
-
-		if (int32* ptr = CurrentPickups.Find(EPickupType::Coin))
-		{
-			CoinsToSpawn -= *ptr;
-		}
-		else
-		{
-			CurrentPickups.Add(EPickupType::Coin, 0);
-		}
-
 		TArray<APickupSpawner*> AllSpawners;
 		TArray<APickupSpawner*> KeySpawners;
 		TArray<APickupSpawner*> CoinSpawners;
-
-		int32 KeysSpawned = 0;
-		int32 CoinsSpawned = 0;
 
 		for (AActor* Actor : PickupSpawners)
 		{
@@ -293,35 +315,35 @@ void ADoorBase::SpawnPickups()
 				}
 			}
 		}
+	}
 
-		if (KeysToSpawn > 0)
+	if (KeysToSpawn > 0)
+	{
+		if (int32* ptr = RequiredPickups.Find(EPickupType::Key))
 		{
-			if (int32* ptr = RequiredPickups.Find(EPickupType::Key))
+			if (KeysSpawned < KeysToSpawn)
 			{
-				if (KeysSpawned < KeysToSpawn)
-				{
-					*ptr -= (KeysToSpawn - KeysSpawned);
-				}
-			}
-			else
-			{
-				RequiredPickups.Add(EPickupType::Key, KeysSpawned);
+				*ptr -= (KeysToSpawn - KeysSpawned);
 			}
 		}
-
-		if (CoinsToSpawn > 0)
+		else
 		{
-			if (int32* ptr = RequiredPickups.Find(EPickupType::Coin))
+			RequiredPickups.Add(EPickupType::Key, KeysSpawned);
+		}
+	}
+
+	if (CoinsToSpawn > 0)
+	{
+		if (int32* ptr = RequiredPickups.Find(EPickupType::Coin))
+		{
+			if (CoinsSpawned < CoinsToSpawn)
 			{
-				if (CoinsSpawned < CoinsToSpawn)
-				{
-					*ptr -= (CoinsToSpawn - CoinsSpawned);
-				}
+				*ptr -= (CoinsToSpawn - CoinsSpawned);
 			}
-			else
-			{
-				RequiredPickups.Add(EPickupType::Coin, CoinsSpawned);
-			}
+		}
+		else
+		{
+			RequiredPickups.Add(EPickupType::Coin, CoinsSpawned);
 		}
 	}
 }
@@ -343,6 +365,16 @@ bool ADoorBase::MapAddChecked(EPickupType Type, bool bIsCurrentMap, int32 Value)
 
 void ADoorBase::OpenDoor_Implementation()
 {
+	if (OpenSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, OpenSound, GetActorLocation());
+	}
+
+	if (AMainGameMode* GM = GetWorld()->GetAuthGameMode<AMainGameMode>())
+	{
+		GM->DoorOpened(this);
+	}
+
 	//idk if this is better
 	//RequiredPickupsWidget->SetVisibility(false);
 }

@@ -6,6 +6,8 @@
 #include "NiagaraComponent.h"
 #include "Doors/DoorBase.h"
 #include "Components/OscillationMovementComponent.h"
+#include "Components/AudioComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 APickupBase::APickupBase()
 {
@@ -17,8 +19,11 @@ APickupBase::APickupBase()
 	PickupMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PickupMesh"));
 	PickupMesh->SetupAttachment(CollisionComponent);
 
-	PickupFX = CreateDefaultSubobject<UNiagaraComponent>(TEXT("PickupFX"));
-	PickupFX->SetupAttachment(PickupMesh);
+	IdleFX = CreateDefaultSubobject<UNiagaraComponent>(TEXT("PickupFX"));
+	IdleFX->SetupAttachment(PickupMesh);
+
+	IdleAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("IdleAudioComponent"));
+	IdleAudioComponent->bAutoActivate = false;
 
 	OscillationMovementComponent = CreateDefaultSubobject<UOscillationMovementComponent>(TEXT("OscillationMovementComponent"));
 }
@@ -28,6 +33,7 @@ void APickupBase::BeginPlay()
 	Super::BeginPlay();
 	
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APickupBase::OnCollisionBeginOverlap);
+	IdleAudioComponent->Activate();
 }
 
 void APickupBase::Tick(float DeltaTime)
@@ -43,6 +49,10 @@ void APickupBase::OnCollisionBeginOverlap(UPrimitiveComponent* OverlappedCompone
 		if (DoorToOpen)
 		{
 			DoorToOpen->AddPickup(PickupType);
+			if (PickupSound)
+			{
+				UGameplayStatics::SpawnSoundAttached(PickupSound, OtherActor->GetRootComponent());
+			}
 			Destroy();
 		}
 	}

@@ -19,10 +19,15 @@ class MIDNIGHTWORKSTEST_API AMainGameMode : public AGameModeBase
 //  Functions
 
 public:
+	void DoorOpened(ADoorBase* Door);
 
 protected:
 	virtual void BeginPlay() override;
 	void InitializeGame();
+
+	void AllRequiredDoorsOpened();
+	void AllAdditionalDoorsOpened();
+	void AllDoorsOpened();
 
 private:
 
@@ -31,6 +36,11 @@ private:
 public:
 
 protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Doors")
+	TArray<TObjectPtr<ADoorBase>> RequiredDoors;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Doors")
+	TArray<TObjectPtr<ADoorBase>> AdditionalDoors;
 
 private:
 };

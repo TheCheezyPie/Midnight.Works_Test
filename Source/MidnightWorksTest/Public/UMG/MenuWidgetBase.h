@@ -24,9 +24,6 @@ public:
 	virtual void OnStartGameButtonClicked();
 
 	UFUNCTION()
-	virtual void OnOptionsButtonClicked();
-
-	UFUNCTION()
 	virtual void OnExitGameButtonClicked();
 
 protected:
@@ -40,9 +37,6 @@ public:
 protected:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<class UButton> StartGameButton;
-
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	TObjectPtr<class UButton> OptionsButton;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<class UButton> ExitGameButton;
