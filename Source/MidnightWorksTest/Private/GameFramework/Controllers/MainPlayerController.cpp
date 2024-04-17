@@ -42,7 +42,17 @@ bool AMainPlayerController::SetPause(bool bPause, FCanUnpause CanUnpauseDelegate
 {
 	bool bResult = Super::SetPause(bPause, CanUnpauseDelegate);
 
-	if (IsPaused())
+
+	return bResult;
+}
+
+void AMainPlayerController::TogglePause()
+{
+	bool bNewPause = !IsPaused();
+
+	SetPause(bNewPause);
+
+	if (bNewPause)
 	{
 		ShowPauseMenu();
 
@@ -60,13 +70,42 @@ bool AMainPlayerController::SetPause(bool bPause, FCanUnpause CanUnpauseDelegate
 
 		SetShowMouseCursor(false);
 	}
-
-	return bResult;
 }
 
-void AMainPlayerController::TogglePause()
+void AMainPlayerController::AllDoorsOpened()
 {
-	SetPause(!IsPaused());
+	if (AllDoorsWidgetClass)
+	{
+		UUserWidget* Widget = CreateWidget(this, AllDoorsWidgetClass);
+		if (Widget)
+		{
+			Widget->AddToViewport();
+		}
+	}
+}
+
+void AMainPlayerController::RequiredDoorsOpened()
+{
+	if (RequiredDoorsWidgetClass)
+	{
+		UUserWidget* Widget = CreateWidget(this, RequiredDoorsWidgetClass);
+		if (Widget)
+		{
+			Widget->AddToViewport();
+		}
+	}
+}
+
+void AMainPlayerController::AdditionalDoorsOpened()
+{
+	if (AdditionalDoorsWidgetClass)
+	{
+		UUserWidget* Widget = CreateWidget(this, AdditionalDoorsWidgetClass);
+		if (Widget)
+		{
+			Widget->AddToViewport();
+		}
+	}
 }
 
 void AMainPlayerController::ShowPauseMenu()

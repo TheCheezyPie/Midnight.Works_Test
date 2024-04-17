@@ -11,8 +11,8 @@ void UMenuWidgetBase::NativeConstruct()
 
 	if (StartGameButton && ExitGameButton)
 	{
-		StartGameButton->OnClicked.AddDynamic(this, &UMenuWidgetBase::OnStartGameButtonClicked);
-		ExitGameButton->OnClicked.AddDynamic(this, &UMenuWidgetBase::OnExitGameButtonClicked);
+		StartGameButton->OnReleased.AddDynamic(this, &UMenuWidgetBase::OnStartGameButtonClicked);
+		ExitGameButton->OnReleased.AddDynamic(this, &UMenuWidgetBase::OnExitGameButtonClicked);
 	}
 }
 

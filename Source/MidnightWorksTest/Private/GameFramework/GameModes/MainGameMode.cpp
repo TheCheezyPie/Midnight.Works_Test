@@ -6,7 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Pickups/PickupSpawner.h"
 #include "Pickups/PickupBase.h"
-
+#include "GameFramework/Controllers/MainPlayerController.h"
 
 void AMainGameMode::BeginPlay()
 {
@@ -25,13 +25,20 @@ void AMainGameMode::InitializeGame()
 		if (Door)
 		{
 			ADoorBase* DoorBase = StaticCast<ADoorBase*>(Door);
-			if (DoorBase->IsRequired())
+			if (DoorBase && DoorBase->IsEnabled())
 			{
-				RequiredDoors.Add(DoorBase);
+				if (DoorBase->IsRequired())
+				{
+					RequiredDoors.Add(DoorBase);
+				}
+				else
+				{
+					AdditionalDoors.Add(DoorBase);
+				}
 			}
 			else
 			{
-				AdditionalDoors.Add(DoorBase);
+				UE_LOG(LogTemp, Warning, TEXT("Door is not enabled"))
 			}
 		}
 	}
@@ -40,16 +47,31 @@ void AMainGameMode::InitializeGame()
 void AMainGameMode::AllRequiredDoorsOpened()
 {
 	LOG_SCREEN("All Required Doors Opened");
+	AMainPlayerController* PC = Cast<AMainPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (PC)
+	{
+		PC->RequiredDoorsOpened();
+	}
 }
 
 void AMainGameMode::AllAdditionalDoorsOpened()
 {
 	LOG_SCREEN("All Additional Doors Opened");
+	AMainPlayerController* PC = Cast<AMainPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (PC)
+	{
+		PC->AdditionalDoorsOpened();
+	}
 }
 
 void AMainGameMode::AllDoorsOpened()
 {
 	LOG_SCREEN("All Doors Opened");
+	AMainPlayerController* PC = Cast<AMainPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (PC)
+	{
+		PC->AllDoorsOpened();
+	}
 }
 
 void AMainGameMode::DoorOpened(ADoorBase* Door)

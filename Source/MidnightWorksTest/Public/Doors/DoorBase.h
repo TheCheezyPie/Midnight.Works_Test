@@ -26,6 +26,7 @@ public:
 
 public:
 	FORCEINLINE FName GetDoorName() const { return DoorName; }
+	FORCEINLINE bool IsEnabled() const { return bIsEnabled; }
 	FORCEINLINE bool IsRequired() const { return bIsRequired; }
 
 	void InitializeDoor();
@@ -80,6 +81,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Door")
 	TMap<EPickupType, int32> CurrentPickups;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door")
+	bool bIsEnabled = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door")
 	bool bIsRequired = true;

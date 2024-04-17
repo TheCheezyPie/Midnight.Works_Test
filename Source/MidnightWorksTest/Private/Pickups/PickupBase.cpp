@@ -23,6 +23,7 @@ APickupBase::APickupBase()
 	IdleFX->SetupAttachment(PickupMesh);
 
 	IdleAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("IdleAudioComponent"));
+	IdleAudioComponent->SetupAttachment(PickupMesh);
 	IdleAudioComponent->bAutoActivate = false;
 
 	OscillationMovementComponent = CreateDefaultSubobject<UOscillationMovementComponent>(TEXT("OscillationMovementComponent"));
@@ -33,6 +34,8 @@ void APickupBase::BeginPlay()
 	Super::BeginPlay();
 	
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APickupBase::OnCollisionBeginOverlap);
+
+	IdleAudioComponent->bAutoActivate = true;
 	IdleAudioComponent->Activate();
 }
 
@@ -46,15 +49,18 @@ void APickupBase::OnCollisionBeginOverlap(UPrimitiveComponent* OverlappedCompone
 {
 	if (OtherActor && OtherActor->ActorHasTag("Player"))
 	{
-		if (DoorToOpen)
+		for (ADoorBase* Door : DoorsToOpen)
 		{
-			DoorToOpen->AddPickup(PickupType);
-			if (PickupSound)
+			if (Door)
 			{
-				UGameplayStatics::SpawnSoundAttached(PickupSound, OtherActor->GetRootComponent());
+				Door->AddPickup(PickupType);
 			}
-			Destroy();
 		}
+		if (PickupSound)
+		{
+			UGameplayStatics::SpawnSoundAttached(PickupSound, OtherActor->GetRootComponent());
+		}
+		Destroy();
 	}
 }
 

@@ -40,7 +40,7 @@ APickupBase* APickupSpawner::SpawnPickup(EPickupType PickupType, ADoorBase* Pick
 		Pickup = GetWorld()->SpawnActor<APickupBase>(PickupClass, GetActorTransform(), SpawnParams);
 		if (Pickup)
 		{
-			Pickup->SetDoorToOpen(PickupOwner);
+			Pickup->GetDoorsToOpen().Add(PickupOwner);
 		}
 	}
 

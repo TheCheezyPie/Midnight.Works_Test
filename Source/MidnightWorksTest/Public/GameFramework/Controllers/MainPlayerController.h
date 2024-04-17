@@ -21,6 +21,10 @@ public:
 	virtual bool SetPause(bool bPause, FCanUnpause CanUnpauseDelegate = FCanUnpause()) override;
 	void TogglePause();
 
+	void AllDoorsOpened();
+	void RequiredDoorsOpened();
+	void AdditionalDoorsOpened();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -40,6 +44,15 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pause")
 	TObjectPtr<UPauseWidget> PauseMenuWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pause")
+	TSubclassOf<class UUserWidget> AllDoorsWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pause")
+	TSubclassOf<class UUserWidget> RequiredDoorsWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pause")
+	TSubclassOf<class UUserWidget> AdditionalDoorsWidgetClass;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))

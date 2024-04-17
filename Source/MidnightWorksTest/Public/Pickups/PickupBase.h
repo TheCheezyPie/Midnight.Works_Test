@@ -8,6 +8,8 @@
 
 #include "PickupBase.generated.h"
 
+class ADoorBase;
+
 UCLASS()
 class MIDNIGHTWORKSTEST_API APickupBase : public AActor
 {
@@ -27,8 +29,7 @@ public:
 public:
 	FORCEINLINE EPickupType GetPickupType() const { return PickupType; }
 
-	FORCEINLINE class ADoorBase* GetDoorToOpen() const { return DoorToOpen; }
-	FORCEINLINE void SetDoorToOpen(class ADoorBase* Door) { DoorToOpen = Door; }
+	FORCEINLINE TArray<ADoorBase*>& GetDoorsToOpen() { return DoorsToOpen; }
 
 protected:
 	UFUNCTION()
@@ -63,7 +64,7 @@ protected:
 	EPickupType PickupType = EPickupType::Coin;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
-	TObjectPtr<class ADoorBase> DoorToOpen;
+	TArray<ADoorBase*> DoorsToOpen;
 
 private:
 };

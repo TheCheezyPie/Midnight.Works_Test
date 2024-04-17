@@ -4,6 +4,7 @@
 #include "UMG/PauseWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/Button.h"
+#include "GameFramework/Controllers/MainPlayerController.h"
 
 void UPauseWidget::NativeConstruct()
 {
@@ -11,7 +12,7 @@ void UPauseWidget::NativeConstruct()
 
 	if (ExitToMainMenuButton)
 	{
-		ExitToMainMenuButton->OnClicked.AddDynamic(this, &UPauseWidget::OnExitToMainMenuButtonClicked);
+		ExitToMainMenuButton->OnReleased.AddDynamic(this, &UPauseWidget::OnExitToMainMenuButtonClicked);
 	}
 }
 
@@ -19,7 +20,7 @@ void UPauseWidget::OnStartGameButtonClicked()
 {
 	Super::OnStartGameButtonClicked();
 
-	GetOwningPlayer()->SetPause(false);
+	GetOwningPlayer<AMainPlayerController>()->TogglePause();
 }
 
 void UPauseWidget::OnExitToMainMenuButtonClicked()

@@ -89,24 +89,27 @@ void ADoorBase::InitNameIfNeeded()
 
 void ADoorBase::FillPickupMaps()
 {
-	if (PickupsFromLevel.Num() > 0)
-	{
-		AccountForPickupsFromLevel();
-	}
-
 	TArray<AActor*> Pickups;
 	UGameplayStatics::GetAllActorsOfClassWithTag(this, APickupBase::StaticClass(), DoorName, Pickups);
-	if (Pickups.Num() > 0)
-	{
-		AddExistingPickups(Pickups);
-	}
+
 	if (bRandomisePickupsAbovePreset || (Pickups.Num() == 0 && PickupsFromLevel.Num() == 0))
 	{
 		RandomisePickups();
 	}
 	SpawnPickups();
 
-	for (auto& Pair : RequiredPickups)
+	if (PickupsFromLevel.Num() > 0)
+	{
+		AccountForPickupsFromLevel();
+	}
+
+	if (Pickups.Num() > 0)
+	{
+		AddExistingPickups(Pickups);
+	}
+
+	auto RequiredPickupsCopy = RequiredPickups;
+	for (auto& Pair : RequiredPickupsCopy)
 	{
 		if (Pair.Value == 0)
 		{
@@ -115,13 +118,13 @@ void ADoorBase::FillPickupMaps()
 		}
 	}
 
-	for (auto& Pair : CurrentPickups)
-	{
-		Pair.Value = 0;
-	}
+	CurrentPickups.Add(EPickupType::Key, 0);
+	CurrentPickups.Add(EPickupType::Coin, 0);
 
 	if (RequiredPickups.Num() == 0)
 	{
+		bIsEnabled = false;
+
 		if (DoorWidget)
 		{
 			DoorWidget->InitializeWidget();
@@ -146,7 +149,7 @@ void ADoorBase::AccountForPickupsFromLevel()
 
 	for (APickupBase* Pickup : PickupsFromLevel)
 	{
-		if (Pickup)
+		if (Pickup && !Pickup->GetDoorsToOpen().Contains(this))
 		{
 			switch (Pickup->GetPickupType())
 			{
@@ -160,19 +163,17 @@ void ADoorBase::AccountForPickupsFromLevel()
 				break;
 			}
 
-			Pickup->SetDoorToOpen(this);
+			Pickup->GetDoorsToOpen().Add(this);
 		}
 	}
 
 	if (KeysSpawned > 0)
 	{
-		MapAddChecked(EPickupType::Key, true, KeysSpawned);
 		MapAddChecked(EPickupType::Key, false, KeysSpawned);
 	}
 
 	if (CoinsSpawned > 0)
 	{
-		MapAddChecked(EPickupType::Coin, true, CoinsSpawned);
 		MapAddChecked(EPickupType::Coin, false, CoinsSpawned);
 	}
 }
@@ -182,14 +183,13 @@ void ADoorBase::AddExistingPickups(const TArray<AActor*>& Pickups)
 	for (AActor* Actor : Pickups)
 	{
 		APickupBase* Pickup = StaticCast<APickupBase*>(Actor);
-		if (Pickup && Pickup->GetDoorToOpen() != this)
+		if (Pickup && !Pickup->GetDoorsToOpen().Contains(this))
 		{
 			EPickupType Type = Pickup->GetPickupType();
 
-			MapAddChecked(Type, true);
 			MapAddChecked(Type, false);
 
-			Pickup->SetDoorToOpen(this);
+			Pickup->GetDoorsToOpen().Add(this);
 		}
 	}
 }
@@ -221,15 +221,6 @@ void ADoorBase::SpawnPickups()
 		RequiredPickups.Add(EPickupType::Key, 0);
 	}
 
-	if (int32* ptr = CurrentPickups.Find(EPickupType::Key))
-	{
-		KeysToSpawn -= *ptr;
-	}
-	else
-	{
-		CurrentPickups.Add(EPickupType::Key, 0);
-	}
-
 	int32 CoinsToSpawn = 0;
 	if (int32* ptr = RequiredPickups.Find(EPickupType::Coin))
 	{
@@ -238,15 +229,6 @@ void ADoorBase::SpawnPickups()
 	else
 	{
 		RequiredPickups.Add(EPickupType::Coin, 0);
-	}
-
-	if (int32* ptr = CurrentPickups.Find(EPickupType::Coin))
-	{
-		CoinsToSpawn -= *ptr;
-	}
-	else
-	{
-		CurrentPickups.Add(EPickupType::Coin, 0);
 	}
 
 	int32 KeysSpawned = 0;
@@ -370,7 +352,8 @@ void ADoorBase::OpenDoor_Implementation()
 		UGameplayStatics::PlaySoundAtLocation(this, OpenSound, GetActorLocation());
 	}
 
-	if (AMainGameMode* GM = GetWorld()->GetAuthGameMode<AMainGameMode>())
+	AMainGameMode* GM = GetWorld()->GetAuthGameMode<AMainGameMode>();
+	if (GM && bIsEnabled)
 	{
 		GM->DoorOpened(this);
 	}
