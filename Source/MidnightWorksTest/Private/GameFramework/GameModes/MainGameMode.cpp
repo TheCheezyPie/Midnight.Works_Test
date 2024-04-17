@@ -54,16 +54,6 @@ void AMainGameMode::AllRequiredDoorsOpened()
 	}
 }
 
-void AMainGameMode::AllAdditionalDoorsOpened()
-{
-	LOG_SCREEN("All Additional Doors Opened");
-	AMainPlayerController* PC = Cast<AMainPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-	if (PC)
-	{
-		PC->AdditionalDoorsOpened();
-	}
-}
-
 void AMainGameMode::AllDoorsOpened()
 {
 	LOG_SCREEN("All Doors Opened");
@@ -95,10 +85,6 @@ void AMainGameMode::DoorOpened(ADoorBase* Door)
 	else if (RequiredDoors.Num() == 0)
 	{
 		AllRequiredDoorsOpened();
-	}
-	else if (AdditionalDoors.Num() == 0)
-	{
-		AllAdditionalDoorsOpened();
 	}
 }
 

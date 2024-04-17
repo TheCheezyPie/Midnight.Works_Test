@@ -96,18 +96,6 @@ void AMainPlayerController::RequiredDoorsOpened()
 	}
 }
 
-void AMainPlayerController::AdditionalDoorsOpened()
-{
-	if (AdditionalDoorsWidgetClass)
-	{
-		UUserWidget* Widget = CreateWidget(this, AdditionalDoorsWidgetClass);
-		if (Widget)
-		{
-			Widget->AddToViewport();
-		}
-	}
-}
-
 void AMainPlayerController::ShowPauseMenu()
 {
 	if (PauseMenuWidget)

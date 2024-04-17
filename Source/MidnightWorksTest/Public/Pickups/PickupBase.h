@@ -55,7 +55,10 @@ protected:
 	TObjectPtr<class UOscillationMovementComponent> OscillationMovementComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
-	TObjectPtr<class UAudioComponent> IdleAudioComponent;
+	TObjectPtr<class UAudioComponent> IdleSoundComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
+	TObjectPtr<class USoundBase> IdleSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
 	TObjectPtr<class USoundBase> PickupSound;

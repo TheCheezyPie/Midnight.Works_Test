@@ -23,7 +23,6 @@ public:
 
 	void AllDoorsOpened();
 	void RequiredDoorsOpened();
-	void AdditionalDoorsOpened();
 
 protected:
 	virtual void BeginPlay() override;
@@ -50,9 +49,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pause")
 	TSubclassOf<class UUserWidget> RequiredDoorsWidgetClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pause")
-	TSubclassOf<class UUserWidget> AdditionalDoorsWidgetClass;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))

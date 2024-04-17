@@ -8,10 +8,12 @@
 #include "Components/OscillationMovementComponent.h"
 #include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
+
 
 APickupBase::APickupBase()
 {
- 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = true;
 
 	CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CollisionComponent"));
 	SetRootComponent(CollisionComponent);
@@ -22,10 +24,6 @@ APickupBase::APickupBase()
 	IdleFX = CreateDefaultSubobject<UNiagaraComponent>(TEXT("PickupFX"));
 	IdleFX->SetupAttachment(PickupMesh);
 
-	IdleAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("IdleAudioComponent"));
-	IdleAudioComponent->SetupAttachment(PickupMesh);
-	IdleAudioComponent->bAutoActivate = false;
-
 	OscillationMovementComponent = CreateDefaultSubobject<UOscillationMovementComponent>(TEXT("OscillationMovementComponent"));
 }
 
@@ -35,8 +33,10 @@ void APickupBase::BeginPlay()
 	
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APickupBase::OnCollisionBeginOverlap);
 
-	IdleAudioComponent->bAutoActivate = true;
-	IdleAudioComponent->Activate();
+	if (IdleSound)
+	{
+		IdleSoundComponent = UGameplayStatics::SpawnSoundAttached(IdleSound, PickupMesh);
+	}
 }
 
 void APickupBase::Tick(float DeltaTime)
@@ -60,6 +60,7 @@ void APickupBase::OnCollisionBeginOverlap(UPrimitiveComponent* OverlappedCompone
 		{
 			UGameplayStatics::SpawnSoundAttached(PickupSound, OtherActor->GetRootComponent());
 		}
+		IdleSoundComponent->Stop();
 		Destroy();
 	}
 }

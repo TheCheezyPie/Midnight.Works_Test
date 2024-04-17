@@ -26,7 +26,6 @@ protected:
 	void InitializeGame();
 
 	void AllRequiredDoorsOpened();
-	void AllAdditionalDoorsOpened();
 	void AllDoorsOpened();
 
 private:
